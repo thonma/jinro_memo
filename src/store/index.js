@@ -9,7 +9,7 @@ class Member {
   }
 }
 
-const _memberNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const _memberNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
 let _members = [];
 if (localStorage.getItem('members')) {
   _members = JSON.parse(localStorage.getItem('members'));
@@ -45,7 +45,7 @@ export default createStore({
       localStorage.setItem('members', JSON.stringify(state._members));
     },
     setCo(state, { memberIdx }) {
-      const options = [null, '占', '霊', '狩', '狂', '狼', '市'];
+      const options = [null, '占', '霊', '狩'];
       const currentValue = state._members[memberIdx].co;
       const currentValueIdx = options.indexOf(currentValue);
       const nextValue = options[currentValueIdx + 1] || options[0];
