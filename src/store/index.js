@@ -5,6 +5,7 @@ class Member {
     this.name = name;
     this.co = null;
     this.deathReason = null;
+    this.isGray = true;
     this.otherMembers = otherMembers; // Array<Member> ※自分を含む
   }
 }
@@ -54,6 +55,9 @@ export default createStore({
       for (const member of state._members) {
         member.otherMembers[memberIdx].co = nextValue;
       }
+
+      state._members[memberIdx].isGray = false;
+
       localStorage.setItem('members', JSON.stringify(state._members));
     },
     setDeathReason(state, { memberIdx }) {
@@ -66,16 +70,23 @@ export default createStore({
       for (const member of state._members) {
         member.otherMembers[memberIdx].deathReason = nextValue;
       }
+
+      state._members[memberIdx].isGray = false;
+
       localStorage.setItem('members', JSON.stringify(state._members));
     },
     setReport(state, { memberIdx, otherMemberIdx }) {
       if (state._members[memberIdx].co !== '占' && state._members[memberIdx].co !== '霊') {
         return;
       }
+
       const options = [null, '白', '黒'];
       const currentValue = state._members[memberIdx].otherMembers[otherMemberIdx].report;
       const currentValueIdx = options.indexOf(currentValue);
       state._members[memberIdx].otherMembers[otherMemberIdx].report = options[currentValueIdx + 1] || options[0];
+
+      state._members[memberIdx].isGray = false;
+
       localStorage.setItem('members', JSON.stringify(state._members));
     },
     setOtherMembers(state) {
@@ -132,7 +143,18 @@ export default createStore({
       }
 
       // ======================================
-      // ■5人以上がCOしたときのCOなしを除外する
+      // ■対抗なしの狩を除外する
+      // ======================================
+      const numOfKariudo = state._members.filter(m => m.co === '狩').length;
+      if (numOfKariudo === 1) {
+        const onlyOneKariudoIdx = state._members.findIndex(m => m.co === '狩');
+        for (const [memberIdx, member] of state._members.entries()) {
+          member.otherMembers[onlyOneKariudoIdx].isHangingOption = false;
+        }
+      }
+
+      // ======================================
+      // ■占COと霊COが5人以上になったときはCOなしを除外する
       // ======================================
       const numOfCo = state._members.filter(m => m.co !== null).length;
       if (5 <= numOfCo) {
@@ -145,17 +167,46 @@ export default createStore({
         }
       }
 
+      // ======================================
+      // ■2人以上の占いから白を出されている人を除外する
+      // ======================================
+      const numOfShiroByMember = {};
+      for (const [memberIdx, member] of state._members.entries()) {
+        if (member.co !== '占') {
+          continue;
+        }
+        for (const [otherMemberIdx, otherMember] of member.otherMembers.entries()) {
+          if (otherMember.report === '白') {
+            if (numOfShiroByMember[otherMemberIdx] === undefined) {
+              numOfShiroByMember[otherMemberIdx] = 1;
+            } else {
+              numOfShiroByMember[otherMemberIdx]++;
+            }
+          }
+        }
+      }
+      for (const [memberIdx, numOfShiro] of Object.entries(numOfShiroByMember)) {
+        if (2 <= numOfShiro) {
+          state._members[memberIdx].isHangingOption = false;
+          for (const [_, member] of state._members.entries()) {
+            member.otherMembers[memberIdx].isHangingOption = false;
+          }
+        }
+      }
+
       localStorage.setItem('members', JSON.stringify(state._members));
     },
     removeOtherThanName(state) {
       for (const [memberIdx, member] of state._members.entries()) {
         member.co = null;
         member.deathReason = null;
+        member.isGray = true;
         member.isHangingOption = true;
 
         for (const [otherMemberIdx, otherMember] of member.otherMembers.entries()) {
           otherMember.co = null;
           otherMember.deathReason = null;
+          otherMember.isGray = true;
           otherMember.isHangingOption = true;
           otherMember.report = null;
         }

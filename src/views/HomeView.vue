@@ -3,9 +3,12 @@
     <table>
       <tr>
         <th colspan="3"></th>
+        <!-- ---------------------------------------------------------- -->
+        <!-- 名前 -->
+        <!-- ---------------------------------------------------------- -->
         <th
-          v-for="member in members"
-          v-bind:key="member.name"
+          v-for="(member, memberIdx) in members"
+          v-bind:key="memberIdx"
           class="bg-primary p-1 fit-content-width"
           :class="{ 'bg-secondary text-gray': member.deathReason !== null }"
         >
@@ -14,9 +17,12 @@
       </tr>
       <tr>
         <th colspan="3"></th>
+        <!-- ---------------------------------------------------------- -->
+        <!-- CO -->
+        <!-- ---------------------------------------------------------- -->
         <th
           v-for="(member, memberIdx) in members"
-          v-bind:key="member.name"
+          v-bind:key="memberIdx"
           class="bg-primary p-2 c-hand"
           :class="{ 'bg-secondary text-gray': member.deathReason !== null }"
           @click="setCo(memberIdx)"
@@ -26,25 +32,39 @@
       </tr>
       <tr>
         <th colspan="3"></th>
+        <!-- ---------------------------------------------------------- -->
+        <!-- 死因 -->
+        <!-- ---------------------------------------------------------- -->
         <th
           v-for="(member, memberIdx) in members"
-          v-bind:key="member.name"
+          v-bind:key="memberIdx"
           class="bg-primary p-1 c-hand"
           :class="{ 'bg-secondary text-gray': member.deathReason !== null }"
           @click="setDeathReason(memberIdx)"
         >
           {{ member.deathReason || "&emsp;" }}
         </th>
-        <td class="px-2">
-          <div class="form-group text-tiny">
-            <label class="form-switch" for="checkbox">
-              <input type="checkbox" id="checkbox" v-model="checked" />
-              <i class="form-icon"></i>吊り候補を表示する
-            </label>
-          </div>
+        <!-- ---------------------------------------------------------- -->
+        <!-- グレー -->
+        <!-- ---------------------------------------------------------- -->
+        <td>
+          <small>グレー:&nbsp;</small>
+          <small v-for="(member, memberIdx) in members" v-bind:key="memberIdx">
+            <span
+              class="px-1"
+              :class="{
+                'text-cancel text-secondary': member.isGray === false,
+              }"
+            >
+              {{ member.name }} </span
+            >&nbsp;
+          </small>
         </td>
       </tr>
       <tr v-for="(rowMember, memberIdx) in members" v-bind:key="memberIdx">
+        <!-- ---------------------------------------------------------- -->
+        <!-- 名前 -->
+        <!-- ---------------------------------------------------------- -->
         <th
           class="fit-content-width bg-primary p-1"
           :class="{ 'bg-secondary text-gray': rowMember.deathReason !== null }"
@@ -55,8 +75,12 @@
             v-model="rowMember.name"
             class="text-center form-input"
             @keyup="setNames(memberIdx, rowMember.name)"
+            onfocus="this.select();"
           />
         </th>
+        <!-- ---------------------------------------------------------- -->
+        <!-- CO -->
+        <!-- ---------------------------------------------------------- -->
         <th
           class="bg-primary p-1 c-hand fit-content-width"
           :class="{ 'bg-secondary text-gray': rowMember.deathReason !== null }"
@@ -64,6 +88,9 @@
         >
           {{ rowMember.co || "&emsp;" }}
         </th>
+        <!-- ---------------------------------------------------------- -->
+        <!-- 死因 -->
+        <!-- ---------------------------------------------------------- -->
         <th
           class="bg-primary p-1 c-hand fit-content-width"
           :class="{ 'bg-secondary text-gray': rowMember.deathReason !== null }"
@@ -71,6 +98,9 @@
         >
           {{ rowMember.deathReason || "&emsp;" }}
         </th>
+        <!-- ---------------------------------------------------------- -->
+        <!-- 占いor霊能 結果 -->
+        <!-- ---------------------------------------------------------- -->
         <td
           v-for="(otherMember, otherMemberIdx) in rowMember.otherMembers"
           v-bind:key="otherMemberIdx"
@@ -84,9 +114,12 @@
         >
           {{ otherMember.report || "&emsp;" }}
         </td>
-        <td v-if="checked">
+        <td>
+          <!-- ---------------------------------------------------------- -->
+          <!-- 吊り候補 -->
+          <!-- ---------------------------------------------------------- -->
           <small>吊り候補:&nbsp;</small>
-          <span
+          <small
             v-for="(otherMember, otherMemberIdx) in rowMember.otherMembers"
             v-bind:key="otherMemberIdx"
           >
@@ -96,9 +129,9 @@
                 'text-cancel text-secondary':
                   otherMember.isHangingOption === false,
               }"
-              ><small>{{ otherMember.name }}</small></span
+              >{{ otherMember.name }}</span
             >
-          </span>
+          </small>
         </td>
       </tr>
     </table>
@@ -109,6 +142,8 @@
     <button class="btn btn-error btn-sm" @click="initOtherThanName()">
       名前以外を初期化
     </button>
+
+    <DescriptionText></DescriptionText>
   </div>
 </template>
 
@@ -116,15 +151,14 @@
 import { computed } from "vue";
 import { useStore } from "vuex";
 
+import DescriptionText from "@/components/DescriptionText.vue";
+
 export default {
   name: "HomeView",
-  components: {},
-  props: {
-    checked: {
-      type: Boolean,
-      default: true,
-    },
+  components: {
+    DescriptionText,
   },
+  props: {},
   setup() {
     const membersJson = sessionStorage.getItem("members");
     const members = computed(() => store.getters.members);
@@ -178,9 +212,11 @@ export default {
 .main {
   padding: 1rem 2rem;
 }
+
 table {
   width: 100%;
   font-size: 1.2rem;
+  white-space: nowrap;
 }
 
 tr:nth-child(n + 3) th,
@@ -190,6 +226,6 @@ tr:nth-child(n + 3) td {
 
 input {
   font-size: 0.8rem;
-  width: 3rem;
+  width: 4rem;
 }
 </style>
