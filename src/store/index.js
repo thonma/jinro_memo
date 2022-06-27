@@ -86,6 +86,7 @@ export default createStore({
       state._members[memberIdx].otherMembers[otherMemberIdx].report = options[currentValueIdx + 1] || options[0];
 
       state._members[memberIdx].isGray = false;
+      state._members[otherMemberIdx].isGray = false;
 
       localStorage.setItem('members', JSON.stringify(state._members));
     },
@@ -156,7 +157,7 @@ export default createStore({
       // ======================================
       // ■占COと霊COが5人以上になったときはCOなしを除外する
       // ======================================
-      const numOfCo = state._members.filter(m => m.co !== null).length;
+      const numOfCo = state._members.filter(m => m.co === '占' || m.co === '霊').length;
       if (5 <= numOfCo) {
         for (const [memberIdx, member] of state._members.entries()) {
           for (const [otherMemberIdx, otherMember] of member.otherMembers.entries()) {
